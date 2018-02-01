@@ -47,4 +47,11 @@ app.get('/api/persons/:id', (req, res) => {
 
 })
 
+app.delete('/api/persons/:id', (req, res) => {
+    let id = Number(req.params.id)
+    persons = persons.filter(note => note.id !== id)
+
+    res.status(204).end()
+})
+
 module.exports = app;
