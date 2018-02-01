@@ -54,4 +54,26 @@ app.delete('/api/persons/:id', (req, res) => {
     res.status(204).end()
 })
 
+app.post('/api/persons', (req, res) => {
+    let body = req.body
+
+    if (!body.name || !body.number) {
+        return res.status(400).json({error: 'content missing'})
+    }
+
+    let person = {
+        name: body.name,
+        number: body.number,
+        id: Math.round(Math.random()*10000)
+    }
+
+    let index = persons.findIndex((personsItem) => personsItem.name === person.name)
+    if(index < 0) {
+        persons.push(person)
+    } else {
+        return res.status(400).json({ error: 'name must be unique' })
+    }
+
+})
+
 module.exports = app;
