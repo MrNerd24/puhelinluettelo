@@ -36,4 +36,15 @@ app.get('/info', (req,res) => {
     res.send("<p>puhelinluettelossa " + persons.length + " henkilön tiedot</p><p>"+ new Date().toString() +"</p>")
 })
 
+app.get('/api/persons/:id', (req, res) => {
+    let id = Number(req.params.id)
+    let person = persons.find((personItem) => personItem.id === id)
+    if(person) {
+        res.json(person)
+    } else {
+        res.status(404).end()
+    }
+
+})
+
 module.exports = app;
