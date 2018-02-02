@@ -27,23 +27,29 @@ app.get('/api/persons', (req, res) => {
     })
 })
 
-// app.get('/info', (req,res) => {
-//     res.send("<p>puhelinluettelossa " + persons.length + " henkilön tiedot</p><p>"+ new Date().toString() +"</p>")
-// })
+app.get('/info', (req,res) => {
+    Person.count().then((count) => {
+        res.send("<p>puhelinluettelossa " + count + " henkilön tiedot</p><p>"+ new Date().toString() +"</p>")
+    })
+})
 
 app.get('/api/persons/:id', (req, res) => {
     Person.findById(req.params.id).then((result) => {
-        if(result) {
+        if (result) {
             res.json(Person.format(result))
         } else {
             res.status(404).end()
         }
+    }).catch((error) => {
+        res.status(400).json({error: "malformatted id"})
     })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
     Person.findById(req.params.id).remove().then(() => {
         res.status(204).end()
+    }).catch((error) => {
+        res.status(404).end()
     })
 })
 
@@ -55,7 +61,7 @@ app.post('/api/persons', (req, res) => {
     }
 
     Person.find({name: body.name}).then((result) => {
-        if(result.length === 0) {
+        if (result.length === 0) {
             let person = new Person({
                 name: body.name,
                 number: body.number,
@@ -65,7 +71,7 @@ app.post('/api/persons', (req, res) => {
                 res.json(Person.format(result2))
             })
         } else {
-            return res.status(400).json({ error: 'name must be unique' })
+            return res.status(400).json({error: 'name must be unique'})
         }
     })
 })
@@ -77,16 +83,15 @@ app.put('/api/persons/:id', (req, res) => {
         return res.status(400).json({error: 'content missing'})
     }
 
-    Person.findById(req.params.id).then((person) => {
-        if(person) {
-            person.name = body.name
-            person.number = body.number
-            person.save().then((result) => {
-                res.json(Person.format(result))
-            })
-        } else {
-            return res.status(404).json({error: 'Item with id not found'})
-        }
+    let person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(req.params.id, person, {new: true}).then((person) => {
+        res.json(Person.format(person))
+    }).catch((error) => {
+        return res.status(400).json({error: 'malformatted id'})
     })
 })
 
