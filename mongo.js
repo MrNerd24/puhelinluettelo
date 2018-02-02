@@ -7,28 +7,28 @@ mongoose.Promise = global.Promise
 
 
 const Person = mongoose.model('Person', {
-    name: String,
-    number: String,
+	name: String,
+	number: String,
 })
 
-if(process.argv[2] && process.argv[3]) {
-    let name = process.argv[2]
-    let number = process.argv[3]
+if (process.argv[2] && process.argv[3]) {
+	let name = process.argv[2]
+	let number = process.argv[3]
 
-    let person = new Person({
-        name, number
-    })
+	let person = new Person({
+		name, number
+	})
 
-    person.save().then((result) => {
-        console.log("lisätään henkilö " + name +" numero " + number + " luetteloon")
-        mongoose.connection.close();
-    })
+	person.save().then((result) => {
+		console.log("lisätään henkilö " + name + " numero " + number + " luetteloon")
+		mongoose.connection.close();
+	})
 } else {
-    Person.find().then((result) => {
-        console.log("Puhelinluettelo: ")
-        result.forEach((person) => {
-            console.log(person.name + " " + person.number)
-        })
-        mongoose.connection.close();
-    })
+	Person.find().then((result) => {
+		console.log("Puhelinluettelo: ")
+		result.forEach((person) => {
+			console.log(person.name + " " + person.number)
+		})
+		mongoose.connection.close();
+	})
 }

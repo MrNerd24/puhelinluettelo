@@ -1,11 +1,10 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const Person = require("./Person")
-const mongoose = require('mongoose')
+const express = require('express')
+const bodyParser = require('body-parser')
+const morgan = require('morgan')
+const Person = require('./Person')
 
-const app = express();
-app.use(bodyParser.json());
+const app = express()
+app.use(bodyParser.json())
 
 app.use(morgan((tokens, req, res) => {
     return [
@@ -27,9 +26,9 @@ app.get('/api/persons', (req, res) => {
     })
 })
 
-app.get('/info', (req,res) => {
+app.get('/info', (req, res) => {
     Person.count().then((count) => {
-        res.send("<p>puhelinluettelossa " + count + " henkilön tiedot</p><p>"+ new Date().toString() +"</p>")
+        res.send('<p>puhelinluettelossa ' + count + ' henkilön tiedot</p><p>' + new Date().toString() + '</p>')
     })
 })
 
@@ -40,15 +39,15 @@ app.get('/api/persons/:id', (req, res) => {
         } else {
             res.status(404).end()
         }
-    }).catch((error) => {
-        res.status(400).json({error: "malformatted id"})
+    }).catch(() => {
+        res.status(400).json({error: 'malformatted id'})
     })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
     Person.findById(req.params.id).remove().then(() => {
         res.status(204).end()
-    }).catch((error) => {
+    }).catch(() => {
         res.status(404).end()
     })
 })
@@ -90,9 +89,9 @@ app.put('/api/persons/:id', (req, res) => {
 
     Person.findByIdAndUpdate(req.params.id, person, {new: true}).then((person) => {
         res.json(Person.format(person))
-    }).catch((error) => {
+    }).catch(() => {
         return res.status(400).json({error: 'malformatted id'})
     })
 })
 
-module.exports = app;
+module.exports = app
