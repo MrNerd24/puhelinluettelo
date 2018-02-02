@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
+require('dotenv').config()
 
-let url = "mongodb://MrNerd:1234@ds121088.mlab.com:21088/mrnerd-persons-db"
+url = process.env.MONGODB_URI
 
 mongoose.connect(url)
 mongoose.Promise = global.Promise
