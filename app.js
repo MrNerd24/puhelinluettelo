@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const Person = require("./Person")
+const mongoose = require('mongoose')
 
 const app = express();
 app.use(bodyParser.json());
@@ -18,53 +20,37 @@ app.use(morgan((tokens, req, res) => {
 
 app.use(express.static('ReactUI/build'))
 
-let persons = [
-    {
-        name: "Arto Hellas",
-        number: "040-123456",
-        id: 1
-    },
-    {
-        name: "Martti Tienari",
-        number: "040-123456",
-        id: 2
-    },
-    {
-        name: "Arto Järvinen",
-        number: "040-123456",
-        id: 3
-    },
-    {
-        name: "Lea Kutvonen",
-        number: "040-123456",
-        id: 4
-    }
-];
+let formatPerson = (person) => {
+    let formattedPerson = {...person, id: person._id}
+    delete formattedPerson._id
+    delete formattedPerson.__v
+    return formattedPerson
+}
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
+    Person.find({}).then((result) => {
+        res.json(result.map(formatPerson))
+    })
 })
 
-app.get('/info', (req,res) => {
-    res.send("<p>puhelinluettelossa " + persons.length + " henkilön tiedot</p><p>"+ new Date().toString() +"</p>")
-})
+// app.get('/info', (req,res) => {
+//     res.send("<p>puhelinluettelossa " + persons.length + " henkilön tiedot</p><p>"+ new Date().toString() +"</p>")
+// })
 
 app.get('/api/persons/:id', (req, res) => {
-    let id = Number(req.params.id)
-    let person = persons.find((personItem) => personItem.id === id)
-    if(person) {
-        res.json(person)
-    } else {
-        res.status(404).end()
-    }
-
+    Person.findById(req.params.id).then((result) => {
+        if(result) {
+            res.json(formatPerson(result))
+        } else {
+            res.status(404).end()
+        }
+    })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-    let id = Number(req.params.id)
-    persons = persons.filter(note => note.id !== id)
-
-    res.status(204).end()
+    Person.findById(req.params.id).remove().then(() => {
+        res.status(204).end()
+    })
 })
 
 app.post('/api/persons', (req, res) => {
@@ -74,43 +60,40 @@ app.post('/api/persons', (req, res) => {
         return res.status(400).json({error: 'content missing'})
     }
 
-    let person = {
-        name: body.name,
-        number: body.number,
-        id: Math.round(Math.random()*10000)
-    }
+    Person.find({name: body.name}).then((result) => {
+        if(result.length === 0) {
+            let person = new Person({
+                name: body.name,
+                number: body.number,
+            })
 
-    let index = persons.findIndex((personsItem) => personsItem.name === person.name)
-    if(index < 0) {
-        persons.push(person)
-        res.json(person)
-    } else {
-        return res.status(400).json({ error: 'name must be unique' })
-    }
-
+            person.save().then((result2) => {
+                res.json(formatPerson(result2))
+            })
+        } else {
+            return res.status(400).json({ error: 'name must be unique' })
+        }
+    })
 })
 
 app.put('/api/persons/:id', (req, res) => {
-    let id = Number(req.params.id)
-
-    if(!persons.some((person) => person.id === id)) {
-        return res.status(404).json({error: 'Item with id not found'})
-    }
-
     let body = req.body
 
     if (!body.name || !body.number) {
         return res.status(400).json({error: 'content missing'})
     }
 
-    let person = {
-        name: body.name,
-        number: body.number,
-        id: id
-    }
-
-    persons = persons.map((personsItem) => personsItem.id === id ? person : personsItem)
-    res.json(person)
+    Person.findById(req.params.id).then((person) => {
+        if(person) {
+            person.name = body.name
+            person.number = body.number
+            person.save().then((result) => {
+                res.json(formatPerson(result))
+            })
+        } else {
+            return res.status(404).json({error: 'Item with id not found'})
+        }
+    })
 })
 
 module.exports = app;
