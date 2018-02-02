@@ -21,7 +21,7 @@ app.use(morgan((tokens, req, res) => {
 app.use(express.static('ReactUI/build'))
 
 let formatPerson = (person) => {
-    let formattedPerson = {...person, id: person._id}
+    let formattedPerson = {...person._doc, id: person._id}
     delete formattedPerson._id
     delete formattedPerson.__v
     return formattedPerson
