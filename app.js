@@ -20,16 +20,10 @@ app.use(morgan((tokens, req, res) => {
 
 app.use(express.static('ReactUI/build'))
 
-let formatPerson = (person) => {
-    let formattedPerson = {...person._doc, id: person._id}
-    delete formattedPerson._id
-    delete formattedPerson.__v
-    return formattedPerson
-}
 
 app.get('/api/persons', (req, res) => {
     Person.find({}).then((result) => {
-        res.json(result.map(formatPerson))
+        res.json(result.map(Person.format))
     })
 })
 
@@ -40,7 +34,7 @@ app.get('/api/persons', (req, res) => {
 app.get('/api/persons/:id', (req, res) => {
     Person.findById(req.params.id).then((result) => {
         if(result) {
-            res.json(formatPerson(result))
+            res.json(Person.format(result))
         } else {
             res.status(404).end()
         }
@@ -68,7 +62,7 @@ app.post('/api/persons', (req, res) => {
             })
 
             person.save().then((result2) => {
-                res.json(formatPerson(result2))
+                res.json(Person.format(result2))
             })
         } else {
             return res.status(400).json({ error: 'name must be unique' })
@@ -88,7 +82,7 @@ app.put('/api/persons/:id', (req, res) => {
             person.name = body.name
             person.number = body.number
             person.save().then((result) => {
-                res.json(formatPerson(result))
+                res.json(Person.format(result))
             })
         } else {
             return res.status(404).json({error: 'Item with id not found'})
